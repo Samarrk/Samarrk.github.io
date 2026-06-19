@@ -1,0 +1,1772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Samar Kintab — AI engineer specializing in computer vision and edge AI. Built Tamakkan, a real-time driving safety system." />
+  <title>Samar Kintab — AI Engineer</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;600;700&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ===== Tokens ===== */
+    :root {
+      --bg: #050810;
+      --bg-elev: #0A0F1C;
+      --surface: #14192A;
+      --navy: #2A3056;
+      --slate: #446B5C;
+      --forest: #294933;
+
+      --text-1: #E8FFFE;
+      --text-2: #7A8E8C;
+      --text-3: #4A5759;
+
+      --cyan: #67FFF2;
+      --teal: #43B0AF;
+      --green: #81EC86;
+
+      --border: rgba(67, 176, 175, 0.12);
+      --border-strong: rgba(103, 255, 242, 0.25);
+
+      --font-display: 'Outfit', sans-serif;
+      --font-body: 'Inter', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+      --pad-x: clamp(20px, 5vw, 80px);
+      --pad-section: clamp(80px, 14vh, 160px);
+      --max-w: 1320px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text-1);
+      font-family: var(--font-body);
+      font-weight: 300;
+      line-height: 1.6;
+      font-size: 16px;
+      overflow-x: hidden;
+      cursor: none;
+    }
+    a { color: inherit; text-decoration: none; }
+    ::selection { background: var(--cyan); color: var(--bg); }
+
+    @media (max-width: 768px) {
+      body { cursor: auto; }
+      .cursor-dot, .cursor-ring { display: none; }
+    }
+
+    /* ===== Flicker animations ===== */
+    /* Subtle continuous neon flicker. Different intensities for different elements. */
+    @keyframes flicker-subtle {
+      0%, 100% { opacity: 1; }
+      41.5% { opacity: 1; }
+      42% { opacity: 0.88; }
+      43% { opacity: 1; }
+      73% { opacity: 1; }
+      73.4% { opacity: 0.94; }
+      74% { opacity: 1; }
+    }
+    @keyframes flicker-medium {
+      0%, 100% { opacity: 1; }
+      18% { opacity: 1; }
+      19% { opacity: 0.72; }
+      20% { opacity: 1; }
+      21.5% { opacity: 0.88; }
+      22% { opacity: 1; }
+      63% { opacity: 1; }
+      63.5% { opacity: 0.72; }
+      64% { opacity: 1; }
+    }
+    @keyframes flicker-strong {
+      0%, 100% { opacity: 1; }
+      8% { opacity: 1; }
+      9% { opacity: 0.3; }
+      10% { opacity: 1; }
+      11% { opacity: 0.55; }
+      12% { opacity: 1; }
+      48% { opacity: 1; }
+      49% { opacity: 0.35; }
+      50% { opacity: 1; }
+      83% { opacity: 1; }
+      84% { opacity: 0.65; }
+      85% { opacity: 1; }
+    }
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(0.92); }
+    }
+    @keyframes breathe {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+    @keyframes drift {
+      0% { transform: translate(0, 0); }
+      33% { transform: translate(8px, -4px); }
+      66% { transform: translate(-4px, 6px); }
+      100% { transform: translate(0, 0); }
+    }
+    @keyframes road-flow {
+      from { transform: translateY(-40px); }
+      to { transform: translateY(0); }
+    }
+    @keyframes notify-cycle {
+      0%, 100% { opacity: 0; transform: translateX(20px); }
+      5%, 25% { opacity: 1; transform: translateX(0); }
+      30% { opacity: 0; transform: translateX(-20px); }
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    .flicker-s { animation: flicker-subtle 6s infinite; }
+    .flicker-m { animation: flicker-medium 4.5s infinite; }
+    .flicker-h { animation: flicker-strong 3s infinite; }
+    .pulse-g { animation: pulse-glow 2.4s ease-in-out infinite; }
+    .breathe { animation: breathe 5s ease-in-out infinite; }
+
+    /* ===== Custom Cursor ===== */
+    .cursor-dot, .cursor-ring {
+      position: fixed; top: 0; left: 0;
+      pointer-events: none; z-index: 9999;
+      border-radius: 50%; transform: translate(-50%, -50%);
+    }
+    .cursor-dot { width: 4px; height: 4px; background: var(--cyan); }
+    .cursor-ring {
+      width: 30px; height: 30px;
+      border: 1px solid var(--cyan);
+      opacity: 0.5;
+      transition: width 0.2s ease, height 0.2s ease, opacity 0.2s ease;
+    }
+    .cursor-ring.hover {
+      width: 50px; height: 50px;
+      opacity: 0.9;
+    }
+
+    /* ===== Telemetry strip ===== */
+    .telemetry {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(5, 8, 16, 0.78);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: var(--text-2);
+    }
+    .telemetry-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 12px var(--pad-x);
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 24px;
+    }
+    .t-left, .t-right { display: flex; gap: 24px; align-items: center; }
+    .t-right { justify-content: flex-end; }
+    .t-cell { display: flex; gap: 8px; align-items: center; white-space: nowrap; }
+    .t-cell .lbl { color: var(--text-3); }
+    .t-cell .val { color: var(--text-1); }
+    .t-cell .cyan { color: var(--cyan); }
+    .dot-live {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green);
+      animation: blink 1.6s ease-in-out infinite;
+    }
+    @media (max-width: 900px) {
+      .telemetry-inner { grid-template-columns: 1fr auto; }
+      .t-right { display: none; }
+    }
+    @media (max-width: 560px) {
+      .t-left { gap: 12px; }
+      .t-cell:nth-child(2) { display: none; }
+    }
+
+    /* ===== Top nav ===== */
+    .nav {
+      position: fixed; top: 44px; left: 0; right: 0;
+      z-index: 99;
+      padding: 14px var(--pad-x);
+      background: rgba(5, 8, 16, 0.75);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .nav-logo {
+      font-family: var(--font-mono);
+      font-weight: 500;
+      font-size: 13px;
+      letter-spacing: 0.1em;
+      color: var(--text-1);
+    }
+    .nav-logo span { color: var(--cyan); }
+    .nav-links { display: flex; gap: 28px; list-style: none;
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.12em; text-transform: uppercase; }
+    .nav-links a { color: var(--text-2); transition: color 0.2s ease; }
+    .nav-links a:hover { color: var(--cyan); }
+    @media (max-width: 700px) { .nav-links { display: none; } }
+
+    /* ===== Section base ===== */
+    .section {
+      padding: var(--pad-section) var(--pad-x);
+      position: relative;
+      scroll-margin-top: 100px;
+    }
+    .section-inner { max-width: var(--max-w); margin: 0 auto; width: 100%; }
+
+    /* ===== Ambient bg layer ===== */
+    .grid-bg {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(67, 176, 175, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(67, 176, 175, 0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 100%);
+      pointer-events: none;
+    }
+
+    /* ===== HERO ===== */
+    .hero {
+      min-height: 100vh;
+      padding: 160px var(--pad-x) 60px;
+      position: relative;
+      display: flex; align-items: center;
+      overflow: hidden;
+    }
+    .hero-grid {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+    @media (max-width: 900px) {
+      .hero-grid { grid-template-columns: 1fr; }
+    }
+
+    .hero-left .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      color: var(--cyan);
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .hero-left .eyebrow::before {
+      content: ''; width: 32px; height: 1px; background: var(--cyan);
+    }
+
+    .typewriter {
+      font-family: var(--font-display);
+      font-size: clamp(36px, 5vw, 64px);
+      font-weight: 200;
+      line-height: 1.05;
+      letter-spacing: -0.01em;
+      color: var(--text-1);
+      margin-bottom: 14px;
+      min-height: 1.3em;
+    }
+    .name {
+      font-family: var(--font-display);
+      font-size: clamp(48px, 7vw, 96px);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.025em;
+      color: var(--cyan);
+      margin-bottom: 28px;
+      min-height: 1.1em;
+    }
+    .caret {
+      display: inline-block; width: 3px; height: 0.9em;
+      background: var(--cyan); margin-left: 6px;
+      transform: translateY(0.1em);
+      animation: blink 0.8s steps(1) infinite;
+    }
+    .hero-tag {
+      font-size: clamp(16px, 1.6vw, 20px);
+      color: var(--text-1);
+      font-weight: 300;
+      max-width: 520px;
+      margin-bottom: 36px;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+    .hero-tag.reveal-on { opacity: 1; }
+    .hero-tag em { font-style: normal; color: var(--cyan); }
+
+    .hero-pills {
+      display: flex; gap: 10px; flex-wrap: wrap;
+      opacity: 0;
+      transition: opacity 0.8s ease 0.2s;
+    }
+    .hero-pills.reveal-on { opacity: 1; }
+    .pill {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 8px 14px;
+      border: 1px solid var(--border-strong);
+      color: var(--text-2);
+    }
+    .pill.green { color: var(--green); border-color: rgba(129, 236, 134, 0.4); }
+
+    /* hands illustration */
+    .hands-wrap {
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 460px;
+    }
+    .hands-svg { width: 100%; height: auto; max-width: 600px; }
+
+    /* ===== ABOUT ===== */
+    .about {
+      padding: var(--pad-section) var(--pad-x);
+      position: relative;
+      overflow: hidden;
+    }
+    .about-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+    @media (max-width: 900px) { .about-inner { grid-template-columns: 1fr; } }
+    .about-text .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      color: var(--green);
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .about-line {
+      font-family: var(--font-display);
+      font-size: clamp(32px, 4.4vw, 56px);
+      font-weight: 300;
+      line-height: 1.1;
+      letter-spacing: -0.015em;
+      margin-bottom: 32px;
+    }
+    .about-line em { font-style: normal; color: var(--cyan); font-weight: 600; }
+    .about-line em.g { color: var(--green); }
+    .about-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1px;
+      background: var(--border);
+    }
+    .about-stat {
+      background: var(--bg);
+      padding: 20px 0;
+    }
+    .about-stat .lbl {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      color: var(--text-3);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .about-stat .val {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: clamp(18px, 1.8vw, 22px);
+      color: var(--text-1);
+    }
+    .about-stat .val.cyan { color: var(--cyan); }
+    .about-stat .val.green { color: var(--green); }
+
+    /* ===== SKILLS / KEYBOARD ===== */
+    .skills {
+      padding: var(--pad-section) var(--pad-x);
+      position: relative;
+      overflow: hidden;
+    }
+    .skills-inner { max-width: var(--max-w); margin: 0 auto; }
+    .skills-header {
+      display: flex; flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 60px;
+      min-height: 110px;
+    }
+    .skills-header .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      color: var(--cyan);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .skill-label {
+      font-family: var(--font-display);
+      font-size: clamp(32px, 4.4vw, 56px);
+      font-weight: 300;
+      line-height: 1.1;
+      letter-spacing: -0.015em;
+      color: var(--text-1);
+      min-height: 1.1em;
+      transition: all 0.3s ease;
+    }
+    .skill-label .name-pop {
+      color: var(--cyan);
+      font-weight: 600;
+    }
+    .skill-label .desc {
+      display: block;
+      font-size: clamp(14px, 1.2vw, 16px);
+      font-family: var(--font-mono);
+      color: var(--text-2);
+      letter-spacing: 0.1em;
+      margin-top: 12px;
+      text-transform: uppercase;
+    }
+    .keyboard-wrap {
+      display: flex; justify-content: center;
+      perspective: 1200px;
+    }
+    .keyboard-svg {
+      width: 100%; max-width: 880px; height: auto;
+      transform: rotateX(8deg);
+    }
+
+    /* ===== TAMAKKAN ===== */
+    .tamakkan {
+      padding: var(--pad-section) var(--pad-x);
+      position: relative;
+      overflow: hidden;
+    }
+    .tk-inner { max-width: var(--max-w); margin: 0 auto; position: relative; z-index: 1; }
+    .tk-meta {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      color: var(--cyan);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .tk-meta::before { content: ''; width: 32px; height: 1px; background: var(--cyan); }
+    .tk-title {
+      font-family: var(--font-display);
+      font-size: clamp(48px, 7vw, 96px);
+      font-weight: 700;
+      line-height: 0.92;
+      letter-spacing: -0.025em;
+      color: var(--text-1);
+      margin-bottom: 8px;
+    }
+    .tk-title .arabic {
+      font-family: var(--font-body);
+      font-weight: 300;
+      font-size: 0.45em;
+      color: var(--text-3);
+      margin-left: 20px;
+      letter-spacing: 0;
+    }
+    .tk-desc {
+      font-size: clamp(16px, 1.5vw, 20px);
+      line-height: 1.6;
+      max-width: 760px;
+      color: var(--text-1);
+      font-weight: 300;
+      margin-bottom: 56px;
+    }
+    .tk-stage {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 32px;
+      margin-bottom: 56px;
+    }
+    @media (max-width: 900px) { .tk-stage { grid-template-columns: 1fr; } }
+
+    .tk-road {
+      position: relative;
+      background: var(--bg-elev);
+      border: 1px solid var(--border-strong);
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
+    }
+    .tk-road svg { width: 100%; height: 100%; display: block; }
+
+    .tk-phone {
+      position: relative;
+      display: flex; justify-content: center; align-items: center;
+    }
+    .tk-phone svg { width: 100%; max-width: 280px; height: auto; }
+
+    .tk-metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+    @media (max-width: 700px) { .tk-metrics { grid-template-columns: repeat(2, 1fr); } }
+    .tk-metric {
+      background: var(--bg);
+      padding: 28px 22px;
+    }
+    .tk-metric .lbl {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      color: var(--text-3);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .tk-metric .val {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(28px, 3.6vw, 44px);
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+    .tk-metric .val .unit {
+      font-family: var(--font-mono);
+      font-weight: 400;
+      font-size: 0.34em;
+      color: var(--text-2);
+      margin-left: 6px;
+      letter-spacing: 0.1em;
+    }
+    .tk-metric.cyan .val { color: var(--cyan); }
+    .tk-metric.green .val { color: var(--green); }
+
+    /* ===== WORK ===== */
+    .work { padding: var(--pad-section) var(--pad-x); position: relative; }
+    .work-inner { max-width: var(--max-w); margin: 0 auto; }
+    .work-header { margin-bottom: 60px; }
+    .work-header .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      color: var(--green);
+      text-transform: uppercase;
+      margin-bottom: 18px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .work-header .eyebrow::before { content: ''; width: 32px; height: 1px; background: var(--green); }
+    .work-header h2 {
+      font-family: var(--font-display);
+      font-size: clamp(36px, 5vw, 64px);
+      font-weight: 300;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+    }
+    .work-header h2 em { font-style: normal; color: var(--cyan); font-weight: 600; }
+
+    .role {
+      display: grid;
+      grid-template-columns: 100px 1fr 200px;
+      gap: 36px;
+      padding: 36px 0;
+      border-top: 1px solid var(--border);
+      align-items: center;
+    }
+    .role:last-child { border-bottom: 1px solid var(--border); }
+    @media (max-width: 800px) {
+      .role { grid-template-columns: 1fr; gap: 18px; }
+      .role-vis { order: -1; height: 140px; }
+    }
+    .role-year {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      color: var(--cyan);
+    }
+    .role-body h3 {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: clamp(20px, 2.2vw, 28px);
+      letter-spacing: -0.01em;
+      color: var(--text-1);
+      margin-bottom: 4px;
+    }
+    .role-body .org {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-2);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .role-body p {
+      font-size: 14px;
+      color: var(--text-2);
+      max-width: 580px;
+      line-height: 1.5;
+    }
+    .role-vis {
+      height: 110px;
+      display: flex; justify-content: flex-end; align-items: center;
+    }
+    .role-vis svg { width: 100%; max-width: 200px; height: 100%; }
+
+    /* ===== CONNECT ===== */
+    .connect {
+      padding: var(--pad-section) var(--pad-x);
+      position: relative;
+      overflow: hidden;
+    }
+    .connect-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      position: relative; z-index: 1;
+    }
+    .connect-eye {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      color: var(--cyan);
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .connect-eye::before { content: ''; width: 32px; height: 1px; background: var(--cyan); }
+    .connect-h {
+      font-family: var(--font-display);
+      font-size: clamp(40px, 6vw, 88px);
+      font-weight: 300;
+      line-height: 1.02;
+      letter-spacing: -0.02em;
+      margin-bottom: 56px;
+      max-width: 1000px;
+    }
+    .connect-h em { font-style: normal; color: var(--cyan); font-weight: 600; }
+    .connect-h em.g { color: var(--green); }
+
+    .connect-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 800px) { .connect-grid { grid-template-columns: 1fr; } }
+    .connect-card {
+      border: 1px solid var(--border-strong);
+      padding: 28px 24px;
+      transition: all 0.3s ease;
+      background: var(--bg);
+      display: block;
+    }
+    .connect-card:hover {
+      background: var(--surface);
+      border-color: var(--cyan);
+    }
+    .connect-card:hover .ck-arrow { color: var(--cyan); transform: translate(4px, -4px); }
+    .connect-card:hover .ck-val { color: var(--cyan); }
+    .ck-top {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 28px;
+    }
+    .ck-lbl {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: var(--text-3);
+      text-transform: uppercase;
+    }
+    .ck-arrow {
+      font-family: var(--font-mono);
+      color: var(--text-2);
+      transition: all 0.25s ease;
+    }
+    .ck-val {
+      font-family: var(--font-body);
+      font-size: clamp(15px, 1.3vw, 17px);
+      color: var(--text-1);
+      word-break: break-all;
+      transition: color 0.25s ease;
+    }
+
+    /* ===== Footer ===== */
+    .footer {
+      padding: 32px var(--pad-x);
+      border-top: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      color: var(--text-3);
+      text-transform: uppercase;
+    }
+    .footer-inner {
+      max-width: var(--max-w); margin: 0 auto;
+      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+    }
+    .footer .cyan { color: var(--cyan); }
+    .footer .green { color: var(--green); }
+
+    /* Reveal scaffold */
+    .reveal { opacity: 1; transform: none; transition: opacity 0.8s ease, transform 0.8s ease; }
+    .js-on .reveal { opacity: 0; transform: translateY(20px); }
+    .js-on .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      .reveal { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <script>document.documentElement.classList.add('js-on');</script>
+
+  <!-- Cursor -->
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- Telemetry -->
+  <header class="telemetry">
+    <div class="telemetry-inner">
+      <div class="t-left">
+        <div class="t-cell">
+          <span class="dot-live"></span>
+          <span class="lbl">SIGNAL</span>
+          <span class="val">LIVE</span>
+        </div>
+        <div class="t-cell">
+          <span class="lbl">LOC</span>
+          <span class="val">21.4858°N · 39.1925°E</span>
+        </div>
+      </div>
+      <div class="t-cell">
+        <span class="lbl">NODE</span>
+        <span class="cyan flicker-s" id="tNode">SK-01 / IDENTITY</span>
+      </div>
+      <div class="t-right">
+        <div class="t-cell">
+          <span class="lbl">JED</span>
+          <span class="val" id="tClock">00:00:00</span>
+        </div>
+        <div class="t-cell">
+          <span class="lbl">v</span>
+          <span class="val">2026.06</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="#top" class="nav-logo">SK<span>//</span>PORTFOLIO</a>
+      <ul class="nav-links">
+        <li><a href="#about">About</a></li>
+        <li><a href="#skills">Skills</a></li>
+        <li><a href="#flagship">Tamakkan</a></li>
+        <li><a href="#work">Work</a></li>
+        <li><a href="#connect">Connect</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ===== HERO ===== -->
+  <section class="hero" id="top" data-node="SK-01 / IDENTITY">
+    <div class="grid-bg"></div>
+    <div class="hero-grid">
+      <div class="hero-left">
+        <div class="eyebrow">AI ENGINEER · JEDDAH</div>
+        <div class="typewriter" id="typewriter">&nbsp;<span class="caret"></span></div>
+        <div class="name" id="nameLine"></div>
+        <p class="hero-tag" id="heroTag">
+          I build <em>AI that sees the road</em> — and I've also worked the pit wall, the stadium gates, and the camps of Mecca.
+        </p>
+        <div class="hero-pills" id="heroPills">
+          <span class="pill">Computer Vision</span>
+          <span class="pill">Edge AI</span>
+          <span class="pill green">Open to Work</span>
+        </div>
+      </div>
+
+      <!-- Hands SVG: human hand reaching from left, robot hand reaching from right, spark in middle -->
+      <div class="hands-wrap">
+        <svg class="hands-svg" viewBox="0 0 600 460" xmlns="http://www.w3.org/2000/svg" aria-label="Two hands reaching toward each other">
+          <!-- ambient particles -->
+          <g class="flicker-s">
+            <circle cx="200" cy="120" r="1" fill="#67FFF2" opacity="0.5"/>
+            <circle cx="420" cy="90" r="1.2" fill="#67FFF2" opacity="0.4"/>
+            <circle cx="350" cy="380" r="1" fill="#81EC86" opacity="0.4"/>
+            <circle cx="180" cy="340" r="0.8" fill="#67FFF2" opacity="0.5"/>
+            <circle cx="500" cy="280" r="1" fill="#67FFF2" opacity="0.3"/>
+            <circle cx="120" cy="240" r="0.6" fill="#43B0AF" opacity="0.5"/>
+          </g>
+
+          <!-- center glow rings (the spark between fingertips) -->
+          <g transform="translate(300, 230)" class="pulse-g">
+            <circle r="60" fill="#67FFF2" opacity="0.04"/>
+            <circle r="30" fill="#67FFF2" opacity="0.10"/>
+            <circle r="12" fill="#67FFF2" opacity="0.30"/>
+            <circle r="3.5" fill="#67FFF2"/>
+            <!-- small green inner accent -->
+            <circle r="1.5" fill="#81EC86"/>
+          </g>
+
+          <!-- HUMAN HAND (left, reaching right, teal/cyan-tinted soft outline) -->
+          <g class="flicker-s" stroke="#A8D5D2" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <!-- forearm (top edge) -->
+            <path d="M 0 200 Q 50 198 100 196 L 160 200" opacity="0.7"/>
+            <!-- forearm (bottom edge) -->
+            <path d="M 0 270 Q 60 270 110 265 L 165 258" opacity="0.7"/>
+            <!-- wrist -->
+            <path d="M 160 200 Q 168 218 170 235 Q 168 250 165 258"/>
+            <!-- palm top edge -->
+            <path d="M 170 235 Q 200 232 230 228"/>
+            <!-- palm bottom edge -->
+            <path d="M 175 258 Q 200 255 222 250"/>
+            <!-- thumb -->
+            <path d="M 175 210 Q 195 196 215 200 Q 225 205 222 215"/>
+            <!-- pinky (curled slightly) -->
+            <path d="M 222 250 Q 240 244 252 232 Q 258 222 254 215"/>
+            <!-- ring finger -->
+            <path d="M 225 245 Q 250 232 268 218 Q 276 210 272 200"/>
+            <!-- middle finger -->
+            <path d="M 228 240 Q 256 222 275 205 Q 285 196 282 188"/>
+            <!-- INDEX FINGER (the reaching one, more prominent / brighter) -->
+          </g>
+          <!-- Index finger drawn separately with brighter cyan -->
+          <g class="flicker-s" stroke="#67FFF2" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M 230 228 Q 258 215 280 210 L 295 222"/>
+            <path d="M 232 240 Q 260 226 282 220 L 297 230"/>
+            <!-- fingertip -->
+            <circle cx="297" cy="226" r="3" fill="#67FFF2"/>
+          </g>
+
+          <!-- ROBOT HAND (right, reaching left, brighter cyan with joints) -->
+          <g class="flicker-m" stroke="#67FFF2" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <!-- forearm segments -->
+            <path d="M 600 200 Q 550 198 500 197 L 440 200"/>
+            <path d="M 600 270 Q 550 270 500 268 L 438 262"/>
+            <!-- joint indicators on forearm -->
+            <circle cx="500" cy="197" r="3" fill="#050810"/>
+            <circle cx="500" cy="268" r="3" fill="#050810"/>
+            <!-- wrist (more geometric) -->
+            <path d="M 440 200 L 432 218 L 430 235 L 432 250 L 438 262"/>
+            <!-- palm top -->
+            <path d="M 430 235 L 400 232 L 372 226"/>
+            <circle cx="400" cy="232" r="2.5" fill="#050810"/>
+            <!-- palm bottom -->
+            <path d="M 432 252 L 405 250 L 378 245"/>
+            <circle cx="405" cy="250" r="2.5" fill="#050810"/>
+            <!-- thumb (segmented) -->
+            <path d="M 425 210 L 408 200 L 395 195 L 388 200"/>
+            <circle cx="408" cy="200" r="2" fill="#050810"/>
+            <!-- pinky -->
+            <path d="M 378 245 L 360 240 L 348 232 L 344 222"/>
+            <circle cx="360" cy="240" r="2" fill="#050810"/>
+            <circle cx="348" cy="232" r="1.8" fill="#050810"/>
+            <!-- ring -->
+            <path d="M 375 240 L 352 230 L 332 218 L 328 205"/>
+            <circle cx="352" cy="230" r="2" fill="#050810"/>
+            <circle cx="332" cy="218" r="1.8" fill="#050810"/>
+            <!-- middle -->
+            <path d="M 372 232 L 348 220 L 322 204 L 316 192"/>
+            <circle cx="348" cy="220" r="2" fill="#050810"/>
+            <circle cx="322" cy="204" r="1.8" fill="#050810"/>
+          </g>
+          <!-- Robot index finger (brighter, more emphasized) -->
+          <g class="flicker-s" stroke="#67FFF2" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M 370 226 L 345 215 L 320 210 L 305 218"/>
+            <path d="M 374 236 L 348 224 L 322 220 L 307 226"/>
+            <!-- joints -->
+            <circle cx="345" cy="215" r="2.5" fill="#050810" stroke="#67FFF2" stroke-width="1.5"/>
+            <circle cx="320" cy="210" r="2.5" fill="#050810" stroke="#67FFF2" stroke-width="1.5"/>
+            <!-- fingertip -->
+            <circle cx="305" cy="222" r="3" fill="#67FFF2"/>
+          </g>
+
+          <!-- Connection line between fingertips (very subtle) -->
+          <line x1="297" y1="226" x2="305" y2="222" stroke="#67FFF2" stroke-width="0.8" opacity="0.6" stroke-dasharray="1 2" class="flicker-m"/>
+
+          <!-- Bottom annotation -->
+          <text x="300" y="430" font-family="JetBrains Mono, monospace" font-size="10" fill="#4A5759" letter-spacing="3" text-anchor="middle" class="flicker-s">// CONNECTION: ACTIVE</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ABOUT ===== -->
+  <section class="about" id="about" data-node="SK-02 / IDENTITY">
+    <div class="grid-bg"></div>
+    <div class="about-inner">
+      <div class="about-text reveal">
+        <div class="eyebrow">// IDENTITY</div>
+        <h2 class="about-line">
+          Half <em>engineer</em>.<br/>Half <em class="g">operator</em>.<br/>Fluent in both.
+        </h2>
+        <p style="color: var(--text-2); max-width: 460px; line-height: 1.6; margin-bottom: 28px;">
+          I build computer vision systems and I run operations at scale. AI that thinks about the road, with the discipline of someone who's also stood at the FIA accreditation desk at sunrise.
+        </p>
+        <div class="about-stats">
+          <div class="about-stat">
+            <div class="lbl">Degree</div>
+            <div class="val">B. Artificial Intelligence</div>
+          </div>
+          <div class="about-stat">
+            <div class="lbl">GPA</div>
+            <div class="val cyan">3.43 / 4.00</div>
+          </div>
+          <div class="about-stat">
+            <div class="lbl">Graduation</div>
+            <div class="val">June 2026</div>
+          </div>
+          <div class="about-stat">
+            <div class="lbl">Status</div>
+            <div class="val green">Open to Work</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Connected hands -->
+      <div class="hands-wrap reveal">
+        <svg class="hands-svg" viewBox="0 0 600 460" xmlns="http://www.w3.org/2000/svg" aria-label="Two hands now connected">
+          <!-- expanding pulse rings -->
+          <g transform="translate(300, 230)">
+            <circle r="180" fill="none" stroke="#67FFF2" stroke-width="0.5" opacity="0.15" class="flicker-m"/>
+            <circle r="130" fill="none" stroke="#67FFF2" stroke-width="0.6" opacity="0.22" class="flicker-s"/>
+            <circle r="80" fill="none" stroke="#67FFF2" stroke-width="0.8" opacity="0.4" class="flicker-m"/>
+            <circle r="40" fill="#67FFF2" opacity="0.12" class="pulse-g"/>
+            <circle r="18" fill="#67FFF2" opacity="0.3"/>
+            <circle r="6" fill="#67FFF2"/>
+            <circle r="2.5" fill="#81EC86"/>
+          </g>
+
+          <!-- particles drifting outward -->
+          <g class="flicker-s">
+            <circle cx="200" cy="120" r="1" fill="#67FFF2" opacity="0.6"/>
+            <circle cx="420" cy="90" r="1.2" fill="#67FFF2" opacity="0.5"/>
+            <circle cx="350" cy="380" r="1" fill="#81EC86" opacity="0.5"/>
+            <circle cx="180" cy="340" r="0.8" fill="#67FFF2" opacity="0.6"/>
+            <circle cx="500" cy="280" r="1" fill="#67FFF2" opacity="0.4"/>
+            <circle cx="120" cy="240" r="0.6" fill="#43B0AF" opacity="0.5"/>
+            <circle cx="540" cy="160" r="0.7" fill="#81EC86" opacity="0.4"/>
+            <circle cx="80" cy="180" r="0.8" fill="#67FFF2" opacity="0.4"/>
+          </g>
+
+          <!-- HUMAN HAND (connected) -->
+          <g class="flicker-s" stroke="#A8D5D2" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M 0 200 Q 50 198 100 196 L 160 200" opacity="0.7"/>
+            <path d="M 0 270 Q 60 270 110 265 L 165 258" opacity="0.7"/>
+            <path d="M 160 200 Q 168 218 170 235 Q 168 250 165 258"/>
+            <path d="M 170 235 Q 200 232 230 228"/>
+            <path d="M 175 258 Q 200 255 222 250"/>
+            <path d="M 175 210 Q 195 196 215 200 Q 225 205 222 215"/>
+            <path d="M 222 250 Q 240 244 252 232 Q 258 222 254 215"/>
+            <path d="M 225 245 Q 250 232 268 218 Q 276 210 272 200"/>
+            <path d="M 228 240 Q 256 222 275 205 Q 285 196 282 188"/>
+          </g>
+          <g class="flicker-s" stroke="#67FFF2" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M 230 228 Q 258 218 285 218 L 298 226"/>
+            <path d="M 232 240 Q 260 230 286 228 L 300 232"/>
+          </g>
+
+          <!-- ROBOT HAND (connected) -->
+          <g class="flicker-m" stroke="#67FFF2" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M 600 200 Q 550 198 500 197 L 440 200"/>
+            <path d="M 600 270 Q 550 270 500 268 L 438 262"/>
+            <circle cx="500" cy="197" r="3" fill="#050810"/>
+            <circle cx="500" cy="268" r="3" fill="#050810"/>
+            <path d="M 440 200 L 432 218 L 430 235 L 432 250 L 438 262"/>
+            <path d="M 430 235 L 400 232 L 372 226"/>
+            <circle cx="400" cy="232" r="2.5" fill="#050810"/>
+            <path d="M 432 252 L 405 250 L 378 245"/>
+            <circle cx="405" cy="250" r="2.5" fill="#050810"/>
+            <path d="M 425 210 L 408 200 L 395 195 L 388 200"/>
+            <circle cx="408" cy="200" r="2" fill="#050810"/>
+            <path d="M 378 245 L 360 240 L 348 232 L 344 222"/>
+            <circle cx="360" cy="240" r="2" fill="#050810"/>
+            <circle cx="348" cy="232" r="1.8" fill="#050810"/>
+            <path d="M 375 240 L 352 230 L 332 218 L 328 205"/>
+            <circle cx="352" cy="230" r="2" fill="#050810"/>
+            <circle cx="332" cy="218" r="1.8" fill="#050810"/>
+            <path d="M 372 232 L 348 220 L 322 204 L 316 192"/>
+            <circle cx="348" cy="220" r="2" fill="#050810"/>
+            <circle cx="322" cy="204" r="1.8" fill="#050810"/>
+          </g>
+          <g class="flicker-s" stroke="#67FFF2" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M 370 226 L 340 220 L 312 222 L 302 226"/>
+            <path d="M 374 236 L 344 230 L 314 228 L 304 232"/>
+            <circle cx="340" cy="222" r="2.5" fill="#050810" stroke="#67FFF2" stroke-width="1.5"/>
+          </g>
+
+          <text x="300" y="430" font-family="JetBrains Mono, monospace" font-size="10" fill="#67FFF2" letter-spacing="3" text-anchor="middle" class="flicker-m">// HANDSHAKE: 100%</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SKILLS / KEYBOARD ===== -->
+  <section class="skills" id="skills" data-node="SK-03 / STACK">
+    <div class="grid-bg"></div>
+    <div class="skills-inner">
+      <div class="skills-header">
+        <div class="eyebrow">// THE TOOLBOX</div>
+        <div class="skill-label" id="skillLabel">
+          Hover a key.
+          <span class="desc" id="skillDesc">EACH KEYCAP IS A SKILL</span>
+        </div>
+      </div>
+
+      <div class="keyboard-wrap reveal">
+        <svg class="keyboard-svg" viewBox="0 0 880 380" xmlns="http://www.w3.org/2000/svg" aria-label="Keyboard with skill keycaps">
+          <!-- Keyboard chassis -->
+          <rect x="20" y="40" width="840" height="320" rx="14" fill="#0A0F1C" stroke="#43B0AF" stroke-width="1" opacity="0.7"/>
+          <rect x="20" y="40" width="840" height="320" rx="14" fill="none" stroke="#67FFF2" stroke-width="1" opacity="0.25" class="flicker-s"/>
+          <!-- under-glow strip -->
+          <rect x="40" y="345" width="800" height="6" rx="3" fill="#67FFF2" opacity="0.18" class="flicker-m"/>
+          <rect x="40" y="345" width="800" height="2" fill="#67FFF2" opacity="0.5" class="flicker-s"/>
+
+          <!-- Row 1: PYTHON, SQL, GIT, GITHUB, JETSON -->
+          <g class="kc" data-skill="Python" data-desc="Primary language · core for all my AI work">
+            <rect x="60" y="80" width="120" height="80" rx="8" fill="#14192A" stroke="#43B0AF" stroke-width="1"/>
+            <rect x="60" y="80" width="120" height="80" rx="8" fill="none" stroke="#67FFF2" stroke-width="1" opacity="0.4" class="flicker-s kc-glow"/>
+            <!-- Python: stylized snake "S" -->
+            <g transform="translate(120, 120)">
+              <path d="M -16 -10 Q -12 -18 -2 -18 L 12 -18 Q 18 -16 18 -10 L 18 -2 Q 18 4 12 4 L -2 4 Q -12 4 -16 10 L -16 14 Q -14 18 -8 18 L 16 18" stroke="#67FFF2" stroke-width="2" fill="none" stroke-linecap="round"/>
+              <circle cx="-12" cy="-13" r="1.5" fill="#67FFF2"/>
+              <circle cx="14" cy="13" r="1.5" fill="#81EC86"/>
+            </g>
+          </g>
+
+          <g class="kc" data-skill="SQL" data-desc="Relational data · queries that don't lose data">
+            <rect x="190" y="80" width="120" height="80" rx="8" fill="#14192A" stroke="#43B0AF" stroke-width="1"/>
+            <rect x="190" y="80" width="120" height="80" rx="8" fill="none" stroke="#67FFF2" stroke-width="1" opacity="0.4" class="flicker-s kc-glow"/>
+            <!-- SQL: cylinder database -->
+            <g transform="translate(250, 120)">
+              <ellipse cx="0" cy="-12" rx="16" ry="5" stroke="#67FFF2" stroke-width="1.8" fill="none"/>
+              <path d="M -16 -12 L -16 12" stroke="#67FFF2" stroke-width="1.8"/>
+              <path d="M 16 -12 L 16 12" stroke="#67FFF2" stroke-width="1.8"/>
+              <ellipse cx="0" cy="12" rx="16" ry="5" stroke="#67FFF2" stroke-width="1.8" fill="none"/>
+              <ellipse cx="0" cy="0" rx="16" ry="5" stroke="#67FFF2" stroke-width="1" fill="none" opacity="0.5"/>
+            </g>
+          </g>
+
+          <g class="kc" data-skill="Git" data-desc="Version control · commits, branches, merge conflicts">
+            <rect x="320" y="80" width="120" height="80" rx="8" fill="#14192A" stroke="#43B0AF" stroke-width="1"/>
+            <rect x="320" y="80" width="120" height="80" rx="8" fill="none" stroke="#67FFF2" stroke-width="1" opacity="0.4" class="flicker-s kc-glow"/>
+            <!-- Git: branching graph -->
+            <g transform="translate(380, 120)" stroke="#67FFF2" stroke-width="2" fill="none" stroke-linecap="round">
+              <line x1="-18" y1="0" x2="18" y2="0"/>
+              <line x1="0" y1="0" x2="14" y2="-12"/>
+              <line x1="0" y1="0" x2="14" y2="12"/>
+              <circle cx="-18" cy="0" r="3.5" fill="#67FFF2"/>
+              <circle cx="18" cy="0" r="3.5" fill="#67FFF2"/>
+              <circle cx="14" cy="-12" r="3.5" fill="#81EC86"/>
+              <circle cx="14" cy="12" r="3.5" fill="#81EC86"/>
+            </g>
+          </g>
+
+          <g class="kc" data-skill="GitHub" data-desc="Where my code lives · github.com/Samarrk">
+            <rect x="450" y="80" width="120" height="80" rx="8" fill="#14192A" stroke="#43B0AF" stroke-width="1"/>
+            <rect x="450" y="80" width="120" height="80" rx="8" fill="none" stroke="#67FFF2" stroke-width="1" opacity="0.4" class="flicker-s kc-glow"/>
+            <!-- GitHub: stylized cat silhouette dot pattern -->
+            <g transform="translate(510, 120)" fill="#67FFF2">
+              <path d="M 0 -16 C -10 -16 -16 -10 -16 -2 C -16 4 -12 10 -7 11 L -7 8 C -10 8 -11 6 -11 4 L -11 2 C -11 0 -9 -2 -6 -2 C -3 -2 -1 0 -1 3 L -1 11 L 1 11 L 1 3 C 1 0 3 -2 6 -2 C 9 -2 11 0 11 2 L 11 4 C 11 6 10 8 7 8 L 7 11 C 12 10 16 4 16 -2 C 16 -10 10 -16 0 -16 Z" />
+            </g>
+          </g>
+
+          <g class="kc" data-skill="Jetson Orin NX" data-desc="Edge AI hardware · where Tamakkan ships">
+            <rect x="580" y="80" width="120" height="80" rx="8" fill="#14192A" stroke="#43B0AF" stroke-width="1"/>
+            <rect x="580" y="80" width="120" height="80" rx="8" fill="none" stroke="#67FFF2" stroke-width="1" opacity="0.4" class="flicker-s kc-glow"/>
+            <!-- Jetson: stylized chip -->
+            <g transform="translate(640, 120)">
+              <rect x="-16" y="-12" width="32" height="24" rx="2" fill="none" stroke="#67FFF2" stroke-width="1.8"/>
+              <rect x="-9" y="-6" width="18" height="12" rx="1" fill="none" stroke="#81EC86" stroke-width="1.2"/>
+              <!-- pins -->
+              <line x1="-18" y1="-7" x2="-21" y2="-7" stroke="#67FFF2" stroke-width="1.5"/>
+              <line x1="-18" y1="0" x2="-21" y2="0" stroke="#67FFF2" stroke-width="1.5"/>
+              <line x1="-18" y1="7" x2="-21" y2="7" stroke="#67FFF2" stroke-width="1.5"/>
+              <line x1="18" y1="-7" x2="21" y2="-7" stroke="#67FFF2" stroke-width="1.5"/>
+              <line x1="18" y1="0" x2="21" y2="0" stroke="#67FFF2" stroke-width="1.5"/>
+              <line x1="18" y1="7" x2="21" y2="7" stroke="#67FFF2" stroke-width="1.5"/>
+            </g>
+          </g>
+
+          <g class="kc" data-skill="OpenCV" data-desc="The original computer vision workhorse">
+            <rect x="710" y="80" width="120" height="80" rx="8" fill="#14192A" stroke="#43B0AF" stroke-width="1"/>
+            <rect x="710" y="80" width="120" height="80" rx="8" fill="none" stroke="#67FFF2" stroke-width="1" opacity="0.4" class="flicker-s kc-glow"/>
+            <!-- OpenCV: camera aperture style -->
+            <g transform="translate(770, 120)">
+              <circle r="18" fill="none" stroke="#67FFF2" stroke-width="1.8"/>
+              <circle r="8" fill="none" stroke="#67FFF2" stroke-width="1.5"/>
+              <line x1="0" y1="-18" x2="0" y2="-10" stroke="#67FFF2" stroke-width="1.5"/>
+              <line x1="0" y1="18" x2="0" y2="10" stroke="#67FFF2" stroke-width="1.5"/>
+              <line x1="-18" y1="0" x2="-10" y2="0" stroke="#67FFF2" stroke-width="1.5"/>
+              <line x1="18" y1="0" x2="10" y2="0" stroke="#67FFF2" stroke-width="1.5"/>
+              <circle r="2" fill="#81EC86"/>
+            </g>
+          </g>
+
+          <!-- Row 2: PYTORCH, NUMPY, PANDAS, SCIKIT, POWERBI, EXCEL -->
+          <g class="kc" data-skill="PyTorch" data-desc="Deep learning framework · used for Tamakkan">
+            <rect x="60" y="180" width="120" height="80" rx="8" fill="#14192A" stroke="#43B0AF" stroke-width="1"/>
+            <rect x="60" y="180" width="120" height="80" rx="8" fill="none" stroke="#67FFF2" stroke-width="1" opacity="0.4" class="flicker-s kc-glow"/>
+            <!-- PyTorch: flame -->
+            <g transform="translate(120, 220)">
+              <path d="M 0 -16 C -8 -10 -14 -2 -10 8 C -6 14 -2 16 0 16 C 2 16 6 14 10 8 C 14 -2 8 -10 0 -16 Z" fill="none" stroke="#67FFF2" stroke-width="1.8"/>
+              <circle r="4" cy="2" fill="#81EC86" opacity="0.7"/>
+            </g>
+          </g>
+
+          <g class="kc" data-skill="NumPy" data-desc="Numerical Python · arrays, math, the foundation">
+            <rect x="190" y="180" width="120" height="80" rx="8" fill="#14192A" stroke="#43B0AF" stroke-width="1"/>
+            <rect x="190" y="180" width="120" height="80" rx="8" fill="none" stroke="#67FFF2" stroke-width="1" opacity="0.4" class="flicker-s kc-glow"/>
+            <!-- NumPy: matrix grid -->
+            <g transform="translate(250, 220)" stroke="#67FFF2" stroke-width="1.5" fill="none">
+              <rect x="-15" y="-12" width="30" height="24"/>
+              <line x1="-5" y1="-12" x2="-5" y2="12"/>
+              <line x1="5" y1="-12" x2="5" y2="12"/>
+              <line x1="-15" y1="-4" x2="15" y2="-4"/>
+              <line x1="-15" y1="4" x2="15" y2="4"/>
+              <circle cx="0" cy="0" r="1.5" fill="#81EC86" stroke="none"/>
+              <circle cx="-10" cy="-8" r="1.5" fill="#81EC86" stroke="none"/>
+              <circle cx="10" cy="8" r="1.5" fill="#81EC86" stroke="none"/>
+            </g>
+          </g>
+
+          <g class="kc" data-skill="Pandas" data-desc="Data wrangling · the dataframe everywhere">
+            <rect x="320" y="180" width="120" height="80" rx="8" fill="#14192A" stroke="#43B0AF" stroke-width="1"/>
+            <rect x="320" y="180" width="120" height="80" rx="8" fill="none" stroke="#67FFF2" stroke-width="1" opacity="0.4" class="flicker-s kc-glow"/>
+            <!-- Pandas: bars -->
+            <g transform="translate(380, 220)">
+              <rect x="-14" y="-4" width="6" height="16" fill="#67FFF2"/>
+              <rect x="-4" y="-12" width="6" height="24" fill="#67FFF2"/>
+              <rect x="6" y="-8" width="6" height="20" fill="#81EC86"/>
+              <line x1="-18" y1="12" x2="18" y2="12" stroke="#67FFF2" stroke-width="1.5"/>
+            </g>
+          </g>
+
+          <g class="kc" data-skill="scikit-learn" data-desc="Classical ML · everything before deep learning">
+            <rect x="450" y="180" width="120" height="80" rx="8" fill="#14192A" stroke="#43B0AF" stroke-width="1"/>
+            <rect x="450" y="180" width="120" height="80" rx="8" fill="none" stroke="#67FFF2" stroke-width="1" opacity="0.4" class="flicker-s kc-glow"/>
+            <!-- sklearn: scatter + line -->
+            <g transform="translate(510, 220)" fill="#67FFF2">
+              <circle cx="-14" cy="6" r="1.8"/>
+              <circle cx="-8" cy="2" r="1.8"/>
+              <circle cx="-2" cy="-2" r="1.8"/>
+              <circle cx="4" cy="-4" r="1.8"/>
+              <circle cx="10" cy="-8" r="1.8"/>
+              <circle cx="14" cy="-10" r="1.8"/>
+              <line x1="-16" y1="8" x2="16" y2="-12" stroke="#81EC86" stroke-width="1.5" fill="none"/>
+            </g>
+          </g>
+
+          <g class="kc" data-skill="Power BI" data-desc="Dashboards · built these at Saudi Motorsport">
+            <rect x="580" y="180" width="120" height="80" rx="8" fill="#14192A" stroke="#43B0AF" stroke-width="1"/>
+            <rect x="580" y="180" width="120" height="80" rx="8" fill="none" stroke="#67FFF2" stroke-width="1" opacity="0.4" class="flicker-s kc-glow"/>
+            <!-- PBI: stacked bars -->
+            <g transform="translate(640, 220)">
+              <rect x="-15" y="-2" width="6" height="14" fill="#67FFF2"/>
+              <rect x="-15" y="-10" width="6" height="6" fill="#81EC86"/>
+              <rect x="-6" y="-8" width="6" height="20" fill="#67FFF2"/>
+              <rect x="3" y="-12" width="6" height="24" fill="#67FFF2"/>
+              <rect x="3" y="-16" width="6" height="3" fill="#81EC86"/>
+              <line x1="-18" y1="12" x2="18" y2="12" stroke="#67FFF2" stroke-width="1.5"/>
+            </g>
+          </g>
+
+          <g class="kc" data-skill="Excel" data-desc="Still the world's most-used data tool">
+            <rect x="710" y="180" width="120" height="80" rx="8" fill="#14192A" stroke="#43B0AF" stroke-width="1"/>
+            <rect x="710" y="180" width="120" height="80" rx="8" fill="none" stroke="#67FFF2" stroke-width="1" opacity="0.4" class="flicker-s kc-glow"/>
+            <!-- Excel: X mark on grid -->
+            <g transform="translate(770, 220)">
+              <rect x="-16" y="-12" width="32" height="24" fill="none" stroke="#67FFF2" stroke-width="1.5"/>
+              <line x1="-16" y1="-4" x2="16" y2="-4" stroke="#67FFF2" stroke-width="1"/>
+              <line x1="-16" y1="4" x2="16" y2="4" stroke="#67FFF2" stroke-width="1"/>
+              <line x1="-5" y1="-12" x2="-5" y2="12" stroke="#67FFF2" stroke-width="1"/>
+              <line x1="5" y1="-12" x2="5" y2="12" stroke="#67FFF2" stroke-width="1"/>
+              <text x="0" y="4" font-family="Outfit" font-size="14" font-weight="700" fill="#81EC86" text-anchor="middle">X</text>
+            </g>
+          </g>
+
+          <!-- Row 3 (smaller): YOLO, BYTETRACK, DEPTH, UFLD, EASYOCR, FASTAPI -->
+          <g class="kc" data-skill="YOLOv11" data-desc="Object detection · the eyes of Tamakkan">
+            <rect x="60" y="280" width="120" height="50" rx="8" fill="#14192A" stroke="#43B0AF" stroke-width="1"/>
+            <rect x="60" y="280" width="120" height="50" rx="8" fill="none" stroke="#67FFF2" stroke-width="1" opacity="0.4" class="flicker-s kc-glow"/>
+            <text x="120" y="312" font-family="JetBrains Mono" font-size="13" font-weight="500" fill="#67FFF2" text-anchor="middle">YOLOv11</text>
+          </g>
+          <g class="kc" data-skill="ByteTrack" data-desc="Multi-object tracking · keeps cars consistent">
+            <rect x="190" y="280" width="120" height="50" rx="8" fill="#14192A" stroke="#43B0AF" stroke-width="1"/>
+            <rect x="190" y="280" width="120" height="50" rx="8" fill="none" stroke="#67FFF2" stroke-width="1" opacity="0.4" class="flicker-s kc-glow"/>
+            <text x="250" y="312" font-family="JetBrains Mono" font-size="13" font-weight="500" fill="#67FFF2" text-anchor="middle">ByteTrack</text>
+          </g>
+          <g class="kc" data-skill="Depth Anything V2" data-desc="Monocular depth estimation · how far is that car?">
+            <rect x="320" y="280" width="120" height="50" rx="8" fill="#14192A" stroke="#43B0AF" stroke-width="1"/>
+            <rect x="320" y="280" width="120" height="50" rx="8" fill="none" stroke="#67FFF2" stroke-width="1" opacity="0.4" class="flicker-s kc-glow"/>
+            <text x="380" y="312" font-family="JetBrains Mono" font-size="13" font-weight="500" fill="#67FFF2" text-anchor="middle">Depth V2</text>
+          </g>
+          <g class="kc" data-skill="UFLD-v2" data-desc="Ultra-fast lane detection · for lane departure">
+            <rect x="450" y="280" width="120" height="50" rx="8" fill="#14192A" stroke="#43B0AF" stroke-width="1"/>
+            <rect x="450" y="280" width="120" height="50" rx="8" fill="none" stroke="#67FFF2" stroke-width="1" opacity="0.4" class="flicker-s kc-glow"/>
+            <text x="510" y="312" font-family="JetBrains Mono" font-size="13" font-weight="500" fill="#67FFF2" text-anchor="middle">UFLD-v2</text>
+          </g>
+          <g class="kc" data-skill="EasyOCR" data-desc="Reading speed signs from dashcam frames">
+            <rect x="580" y="280" width="120" height="50" rx="8" fill="#14192A" stroke="#43B0AF" stroke-width="1"/>
+            <rect x="580" y="280" width="120" height="50" rx="8" fill="none" stroke="#67FFF2" stroke-width="1" opacity="0.4" class="flicker-s kc-glow"/>
+            <text x="640" y="312" font-family="JetBrains Mono" font-size="13" font-weight="500" fill="#67FFF2" text-anchor="middle">EasyOCR</text>
+          </g>
+          <g class="kc" data-skill="FastAPI" data-desc="Python backend · serves Tamakkan's inference">
+            <rect x="710" y="280" width="120" height="50" rx="8" fill="#14192A" stroke="#43B0AF" stroke-width="1"/>
+            <rect x="710" y="280" width="120" height="50" rx="8" fill="none" stroke="#67FFF2" stroke-width="1" opacity="0.4" class="flicker-s kc-glow"/>
+            <text x="770" y="312" font-family="JetBrains Mono" font-size="13" font-weight="500" fill="#67FFF2" text-anchor="middle">FastAPI</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TAMAKKAN ===== -->
+  <section class="tamakkan" id="flagship" data-node="SK-04 / FLAGSHIP">
+    <div class="grid-bg"></div>
+    <div class="tk-inner">
+      <div class="tk-meta reveal">FLAGSHIP CASE · GRADED 100/100</div>
+      <h2 class="tk-title reveal">Tamakkan<span class="arabic">تمكّن</span></h2>
+      <p class="tk-desc reveal">
+        An end-to-end real-time computer vision pipeline that detects unsafe driving behaviors — tailgating, near-miss, lane departure, red-light running — and delivers live alerts to the driver via a mobile app. Trained on BDD100K. Deployed on NVIDIA Jetson Orin NX.
+      </p>
+
+      <div class="tk-stage reveal">
+        <!-- Road + YOLO scene -->
+        <div class="tk-road">
+          <svg viewBox="0 0 600 450" xmlns="http://www.w3.org/2000/svg" aria-label="Road view with YOLO detection boxes">
+            <!-- horizon -->
+            <line x1="0" y1="180" x2="600" y2="180" stroke="#43B0AF" stroke-width="0.5" opacity="0.3"/>
+
+            <!-- Perspective lane lines (animated) -->
+            <g class="flicker-s">
+              <!-- Left lane edge -->
+              <path d="M 100 450 L 270 180" stroke="#43B0AF" stroke-width="1" opacity="0.4"/>
+              <!-- Right lane edge -->
+              <path d="M 500 450 L 330 180" stroke="#43B0AF" stroke-width="1" opacity="0.4"/>
+            </g>
+
+            <!-- Animated center dashes -->
+            <g>
+              <g style="animation: road-flow 0.7s linear infinite;">
+                <line x1="300" y1="180" x2="300" y2="195" stroke="#67FFF2" stroke-width="2"/>
+                <line x1="300" y1="220" x2="300" y2="240" stroke="#67FFF2" stroke-width="2.5"/>
+                <line x1="300" y1="270" x2="300" y2="295" stroke="#67FFF2" stroke-width="3"/>
+                <line x1="300" y1="325" x2="300" y2="360" stroke="#67FFF2" stroke-width="3.5"/>
+                <line x1="300" y1="390" x2="300" y2="440" stroke="#67FFF2" stroke-width="4"/>
+              </g>
+            </g>
+
+            <!-- Far vehicle (small) -->
+            <g class="flicker-s">
+              <!-- car body suggestion -->
+              <rect x="280" y="175" width="40" height="20" fill="none" stroke="#446B5C" stroke-width="0.8" opacity="0.7"/>
+              <!-- YOLO box -->
+              <rect x="276" y="170" width="48" height="30" fill="none" stroke="#67FFF2" stroke-width="1.5"/>
+              <rect x="276" y="158" width="42" height="12" fill="#67FFF2"/>
+              <text x="297" y="167" font-family="JetBrains Mono" font-size="8" fill="#050810" text-anchor="middle" font-weight="600">CAR 0.91</text>
+            </g>
+
+            <!-- Mid vehicle -->
+            <g class="flicker-m">
+              <!-- car suggestion -->
+              <rect x="240" y="225" width="80" height="36" fill="none" stroke="#446B5C" stroke-width="1" opacity="0.8"/>
+              <rect x="252" y="232" width="56" height="14" fill="none" stroke="#446B5C" stroke-width="0.5" opacity="0.5"/>
+              <!-- YOLO box (brighter, this is the focused one) -->
+              <rect x="232" y="218" width="96" height="50" fill="none" stroke="#67FFF2" stroke-width="2"/>
+              <rect x="232" y="204" width="60" height="14" fill="#67FFF2"/>
+              <text x="262" y="213" font-family="JetBrains Mono" font-size="9" fill="#050810" text-anchor="middle" font-weight="600">CAR 0.96</text>
+              <!-- distance indicator below -->
+              <text x="280" y="285" font-family="JetBrains Mono" font-size="9" fill="#67FFF2" text-anchor="middle">12.4m</text>
+            </g>
+
+            <!-- Side car -->
+            <g class="flicker-m" opacity="0.85">
+              <rect x="80" y="300" width="78" height="50" fill="none" stroke="#446B5C" stroke-width="1"/>
+              <rect x="74" y="292" width="90" height="68" fill="none" stroke="#67FFF2" stroke-width="1.5"/>
+              <rect x="74" y="280" width="56" height="12" fill="#67FFF2" opacity="0.85"/>
+              <text x="102" y="289" font-family="JetBrains Mono" font-size="8" fill="#050810" text-anchor="middle" font-weight="600">CAR 0.87</text>
+            </g>
+
+            <!-- Traffic light far -->
+            <g class="flicker-h">
+              <rect x="430" y="105" width="14" height="32" fill="none" stroke="#446B5C" stroke-width="1"/>
+              <circle cx="437" cy="115" r="3" fill="#81EC86"/>
+              <circle cx="437" cy="125" r="2" fill="#446B5C"/>
+              <circle cx="437" cy="135" r="2" fill="#446B5C"/>
+              <text x="455" y="120" font-family="JetBrains Mono" font-size="8" fill="#81EC86">GREEN 0.94</text>
+            </g>
+
+            <!-- Speed sign -->
+            <g class="flicker-s">
+              <circle cx="510" cy="180" r="14" fill="none" stroke="#67FFF2" stroke-width="1.5"/>
+              <text x="510" y="186" font-family="Outfit" font-size="14" font-weight="700" fill="#67FFF2" text-anchor="middle">80</text>
+              <text x="510" y="208" font-family="JetBrains Mono" font-size="8" fill="#67FFF2" text-anchor="middle">SPEED · OCR</text>
+            </g>
+
+            <!-- HUD overlays -->
+            <text x="20" y="30" font-family="JetBrains Mono" font-size="10" fill="#446B5C" letter-spacing="2" class="flicker-s">// LIVE · FRAME 14823</text>
+            <text x="580" y="30" font-family="JetBrains Mono" font-size="10" fill="#81EC86" letter-spacing="2" text-anchor="end" class="flicker-m">11.0 FPS</text>
+            <text x="20" y="435" font-family="JetBrains Mono" font-size="10" fill="#446B5C" letter-spacing="2" class="flicker-s">// LANE: CENTERED</text>
+            <text x="580" y="435" font-family="JetBrains Mono" font-size="10" fill="#446B5C" letter-spacing="2" text-anchor="end" class="flicker-s">YOLOv11 + BYTETRACK</text>
+
+            <!-- corner brackets -->
+            <g stroke="#67FFF2" stroke-width="1" fill="none" opacity="0.5">
+              <path d="M 8 8 L 8 22 M 8 8 L 22 8"/>
+              <path d="M 592 8 L 592 22 M 592 8 L 578 8"/>
+              <path d="M 8 442 L 8 428 M 8 442 L 22 442"/>
+              <path d="M 592 442 L 592 428 M 592 442 L 578 442"/>
+            </g>
+          </svg>
+        </div>
+
+        <!-- Phone with cycling notifications -->
+        <div class="tk-phone">
+          <svg viewBox="0 0 280 500" xmlns="http://www.w3.org/2000/svg" aria-label="Phone with alert notifications">
+            <!-- phone frame -->
+            <rect x="20" y="20" width="240" height="460" rx="28" fill="none" stroke="#43B0AF" stroke-width="1.5"/>
+            <rect x="20" y="20" width="240" height="460" rx="28" fill="none" stroke="#67FFF2" stroke-width="0.8" opacity="0.5" class="flicker-s"/>
+
+            <!-- top notch -->
+            <rect x="110" y="30" width="60" height="6" rx="3" fill="#43B0AF" opacity="0.5"/>
+
+            <!-- status bar -->
+            <text x="40" y="60" font-family="JetBrains Mono" font-size="9" fill="#446B5C" letter-spacing="1">9:41</text>
+            <text x="240" y="60" font-family="JetBrains Mono" font-size="9" fill="#446B5C" letter-spacing="1" text-anchor="end">•••</text>
+
+            <!-- app title -->
+            <text x="140" y="92" font-family="Outfit" font-weight="700" font-size="16" fill="#67FFF2" text-anchor="middle" class="flicker-s">TAMAKKAN</text>
+            <line x1="40" y1="105" x2="240" y2="105" stroke="#43B0AF" stroke-width="0.5" opacity="0.4"/>
+
+            <!-- Notification 1: TAILGATING -->
+            <g style="animation: notify-cycle 9s infinite 0s">
+              <rect x="40" y="130" width="200" height="68" rx="6" fill="#14192A" stroke="#81EC86" stroke-width="1.5"/>
+              <rect x="40" y="130" width="200" height="68" rx="6" fill="none" stroke="#81EC86" stroke-width="2" opacity="0.4" class="flicker-h"/>
+              <circle cx="58" cy="148" r="5" fill="#81EC86" class="flicker-h"/>
+              <text x="75" y="152" font-family="Outfit" font-weight="700" font-size="12" fill="#81EC86">⚠ TAILGATING</text>
+              <text x="58" y="172" font-family="Inter" font-size="11" fill="#E8FFFE">Vehicle ahead at 8.2m</text>
+              <text x="58" y="188" font-family="JetBrains Mono" font-size="9" fill="#446B5C" letter-spacing="1">SEVERITY · HIGH</text>
+            </g>
+
+            <!-- Notification 2: LANE OK -->
+            <g style="animation: notify-cycle 9s infinite 3s">
+              <rect x="40" y="210" width="200" height="68" rx="6" fill="#14192A" stroke="#67FFF2" stroke-width="1.5"/>
+              <rect x="40" y="210" width="200" height="68" rx="6" fill="none" stroke="#67FFF2" stroke-width="2" opacity="0.4" class="flicker-m"/>
+              <circle cx="58" cy="228" r="5" fill="#67FFF2"/>
+              <text x="75" y="232" font-family="Outfit" font-weight="700" font-size="12" fill="#67FFF2">✓ LANE CENTERED</text>
+              <text x="58" y="252" font-family="Inter" font-size="11" fill="#E8FFFE">No drift detected</text>
+              <text x="58" y="268" font-family="JetBrains Mono" font-size="9" fill="#446B5C" letter-spacing="1">STATUS · NOMINAL</text>
+            </g>
+
+            <!-- Notification 3: NEAR-MISS -->
+            <g style="animation: notify-cycle 9s infinite 6s">
+              <rect x="40" y="290" width="200" height="68" rx="6" fill="#14192A" stroke="#81EC86" stroke-width="1.5"/>
+              <rect x="40" y="290" width="200" height="68" rx="6" fill="none" stroke="#81EC86" stroke-width="2" opacity="0.4" class="flicker-h"/>
+              <circle cx="58" cy="308" r="5" fill="#81EC86" class="flicker-h"/>
+              <text x="75" y="312" font-family="Outfit" font-weight="700" font-size="12" fill="#81EC86">⚠ NEAR-MISS</text>
+              <text x="58" y="332" font-family="Inter" font-size="11" fill="#E8FFFE">Side vehicle proximity</text>
+              <text x="58" y="348" font-family="JetBrains Mono" font-size="9" fill="#446B5C" letter-spacing="1">SEVERITY · HIGH</text>
+            </g>
+
+            <!-- bottom bar -->
+            <text x="140" y="450" font-family="JetBrains Mono" font-size="9" fill="#446B5C" text-anchor="middle" letter-spacing="2" class="flicker-s">// FEED ACTIVE</text>
+            <rect x="100" y="465" width="80" height="3" rx="1.5" fill="#43B0AF" opacity="0.5"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Metrics -->
+      <div class="tk-metrics reveal">
+        <div class="tk-metric cyan">
+          <div class="lbl">Throughput</div>
+          <div class="val">11.0<span class="unit">FPS</span></div>
+        </div>
+        <div class="tk-metric">
+          <div class="lbl">Detection mAP50</div>
+          <div class="val">0.7135<span class="unit">@ 1280</span></div>
+        </div>
+        <div class="tk-metric">
+          <div class="lbl">Traffic Light HSV</div>
+          <div class="val">95.3<span class="unit">% ACC</span></div>
+        </div>
+        <div class="tk-metric green">
+          <div class="lbl">Final Grade</div>
+          <div class="val">100<span class="unit">/ 100</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== WORK ===== -->
+  <section class="work" id="work" data-node="SK-05 / TRACK RECORD">
+    <div class="work-inner">
+      <div class="work-header reveal">
+        <div class="eyebrow">// TRACK RECORD</div>
+        <h2>Where I've <em>shown up</em>.</h2>
+      </div>
+
+      <div class="role reveal">
+        <div class="role-year">2025 · MAR – JUN</div>
+        <div class="role-body">
+          <h3>Applications & IT Intern</h3>
+          <div class="org">Saudi Motorsport Company</div>
+          <p>IT operations during international motorsport events. Built Power BI dashboards, supported ERP work, coordinated vendor accreditation, troubleshot hardware on race weekends.</p>
+        </div>
+        <div class="role-vis">
+          <!-- Steering wheel SVG -->
+          <svg viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg" aria-label="Steering wheel">
+            <g transform="translate(100, 55)">
+              <!-- outer rim -->
+              <circle r="44" fill="none" stroke="#67FFF2" stroke-width="1.5" class="flicker-s"/>
+              <circle r="44" fill="none" stroke="#43B0AF" stroke-width="0.5" opacity="0.5"/>
+              <!-- top flat -->
+              <path d="M -30 -35 L 30 -35" stroke="#67FFF2" stroke-width="1.5"/>
+              <path d="M -30 35 L 30 35" stroke="#67FFF2" stroke-width="1.5"/>
+              <!-- center hub -->
+              <rect x="-20" y="-12" width="40" height="24" rx="3" fill="none" stroke="#67FFF2" stroke-width="1.2"/>
+              <!-- buttons -->
+              <circle cx="-10" cy="-3" r="2" fill="#81EC86" class="flicker-m"/>
+              <circle cx="0" cy="-3" r="2" fill="#67FFF2"/>
+              <circle cx="10" cy="-3" r="2" fill="#81EC86" class="flicker-m"/>
+              <line x1="-10" y1="4" x2="10" y2="4" stroke="#67FFF2" stroke-width="1"/>
+              <!-- LED strip at top -->
+              <rect x="-22" y="-22" width="4" height="3" fill="#81EC86" class="flicker-h"/>
+              <rect x="-15" y="-22" width="4" height="3" fill="#81EC86"/>
+              <rect x="-8" y="-22" width="4" height="3" fill="#67FFF2"/>
+              <rect x="-1" y="-22" width="4" height="3" fill="#67FFF2"/>
+              <rect x="6" y="-22" width="4" height="3" fill="#67FFF2"/>
+              <rect x="13" y="-22" width="4" height="3" fill="#43B0AF"/>
+              <rect x="20" y="-22" width="4" height="3" fill="#43B0AF"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <div class="role reveal">
+        <div class="role-year">2024 · JUN – JUL</div>
+        <div class="role-body">
+          <h3>Residential Assistant</h3>
+          <div class="org">Mawhiba · International Summer Program</div>
+          <p>24/7 residential support for international students at Princess Nora University. Collaborated with Oxmedica and university staff on logistics.</p>
+        </div>
+        <div class="role-vis">
+          <!-- Graduation cap with figures SVG -->
+          <svg viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg" aria-label="Students with cap">
+            <g transform="translate(100, 55)">
+              <!-- grad cap -->
+              <polygon points="-30,-25 30,-25 0,-40" fill="none" stroke="#67FFF2" stroke-width="1.5" class="flicker-s"/>
+              <rect x="-20" y="-25" width="40" height="6" fill="none" stroke="#67FFF2" stroke-width="1.5"/>
+              <line x1="0" y1="-25" x2="22" y2="-12" stroke="#81EC86" stroke-width="1" class="flicker-m"/>
+              <circle cx="22" cy="-12" r="2" fill="#81EC86"/>
+              <!-- student figures (3) -->
+              <g class="flicker-s">
+                <circle cx="-30" cy="5" r="5" fill="none" stroke="#67FFF2" stroke-width="1.2"/>
+                <path d="M -30 11 L -30 28 M -30 18 L -38 24 M -30 18 L -22 24 M -30 28 L -33 36 M -30 28 L -27 36" stroke="#67FFF2" stroke-width="1" fill="none"/>
+              </g>
+              <g class="flicker-m">
+                <circle cx="0" cy="5" r="5" fill="none" stroke="#67FFF2" stroke-width="1.2"/>
+                <path d="M 0 11 L 0 28 M 0 18 L -8 24 M 0 18 L 8 24 M 0 28 L -3 36 M 0 28 L 3 36" stroke="#67FFF2" stroke-width="1" fill="none"/>
+              </g>
+              <g class="flicker-s">
+                <circle cx="30" cy="5" r="5" fill="none" stroke="#67FFF2" stroke-width="1.2"/>
+                <path d="M 30 11 L 30 28 M 30 18 L 22 24 M 30 18 L 38 24 M 30 28 L 27 36 M 30 28 L 33 36" stroke="#67FFF2" stroke-width="1" fill="none"/>
+              </g>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <div class="role reveal">
+        <div class="role-year">2023 – 2024</div>
+        <div class="role-body">
+          <h3>Operations · Three Roles</h3>
+          <div class="org">Flynas Hajj & Umrah · Two Hajj Seasons</div>
+          <p>Mina Camps Supervisor · Housing & VIP Supervisor · VIP Accommodation Coordinator. Led camp operations, managed accommodation logistics for large pilgrim groups, coordinated VIP and standard support — including Ministry of Investment delegates.</p>
+        </div>
+        <div class="role-vis">
+          <!-- Hotel buildings + figures SVG -->
+          <svg viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg" aria-label="Hotels and pilgrims">
+            <g transform="translate(100, 55)">
+              <!-- tower (Mecca clock-tower-ish) -->
+              <rect x="-8" y="-40" width="16" height="60" fill="none" stroke="#67FFF2" stroke-width="1.5" class="flicker-s"/>
+              <circle cx="0" cy="-30" r="5" fill="none" stroke="#81EC86" stroke-width="1.2" class="flicker-m"/>
+              <line x1="0" y1="-30" x2="0" y2="-33" stroke="#81EC86" stroke-width="1"/>
+              <line x1="0" y1="-30" x2="3" y2="-30" stroke="#81EC86" stroke-width="1"/>
+              <polygon points="-8,-40 0,-46 8,-40" fill="none" stroke="#67FFF2" stroke-width="1.5"/>
+              <line x1="-6" y1="-20" x2="6" y2="-20" stroke="#67FFF2" stroke-width="0.6" opacity="0.5"/>
+              <line x1="-6" y1="-10" x2="6" y2="-10" stroke="#67FFF2" stroke-width="0.6" opacity="0.5"/>
+              <line x1="-6" y1="0" x2="6" y2="0" stroke="#67FFF2" stroke-width="0.6" opacity="0.5"/>
+              <line x1="-6" y1="10" x2="6" y2="10" stroke="#67FFF2" stroke-width="0.6" opacity="0.5"/>
+              <!-- side buildings -->
+              <rect x="-30" y="-10" width="14" height="30" fill="none" stroke="#43B0AF" stroke-width="1" opacity="0.7"/>
+              <rect x="16" y="-15" width="14" height="35" fill="none" stroke="#43B0AF" stroke-width="1" opacity="0.7"/>
+              <!-- ground line -->
+              <line x1="-45" y1="20" x2="45" y2="20" stroke="#67FFF2" stroke-width="1"/>
+              <!-- pilgrim figures -->
+              <g class="flicker-s">
+                <circle cx="-38" cy="26" r="2.5" fill="none" stroke="#67FFF2" stroke-width="1"/>
+                <path d="M -38 28 L -38 38" stroke="#67FFF2" stroke-width="1"/>
+                <circle cx="-30" cy="26" r="2.5" fill="none" stroke="#67FFF2" stroke-width="1"/>
+                <path d="M -30 28 L -30 38" stroke="#67FFF2" stroke-width="1"/>
+                <circle cx="-22" cy="26" r="2.5" fill="none" stroke="#67FFF2" stroke-width="1"/>
+                <path d="M -22 28 L -22 38" stroke="#67FFF2" stroke-width="1"/>
+              </g>
+              <g class="flicker-m">
+                <circle cx="22" cy="26" r="2.5" fill="none" stroke="#67FFF2" stroke-width="1"/>
+                <path d="M 22 28 L 22 38" stroke="#67FFF2" stroke-width="1"/>
+                <circle cx="30" cy="26" r="2.5" fill="none" stroke="#67FFF2" stroke-width="1"/>
+                <path d="M 30 28 L 30 38" stroke="#67FFF2" stroke-width="1"/>
+                <circle cx="38" cy="26" r="2.5" fill="none" stroke="#67FFF2" stroke-width="1"/>
+                <path d="M 38 28 L 38 38" stroke="#67FFF2" stroke-width="1"/>
+              </g>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <div class="role reveal">
+        <div class="role-year">2023 · DEC</div>
+        <div class="role-body">
+          <h3>Ticketing Operations Supervisor</h3>
+          <div class="org">Shine Event Staffing · FIFA Club World Cup</div>
+          <p>Managed ticketing operations with event organizers, venue staff, and technology partners. Resolved last-minute changes to keep gates flowing and fans inside.</p>
+        </div>
+        <div class="role-vis">
+          <!-- Stadium with radio waves -->
+          <svg viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg" aria-label="Stadium with broadcast waves">
+            <g transform="translate(100, 60)">
+              <!-- stadium oval -->
+              <ellipse rx="38" ry="18" fill="none" stroke="#67FFF2" stroke-width="1.5" class="flicker-s"/>
+              <ellipse rx="32" ry="12" fill="none" stroke="#43B0AF" stroke-width="1" opacity="0.7"/>
+              <ellipse rx="20" ry="6" fill="none" stroke="#81EC86" stroke-width="1" class="flicker-m"/>
+              <!-- center -->
+              <circle r="2" fill="#81EC86"/>
+              <!-- field lines -->
+              <line x1="-32" y1="0" x2="-22" y2="0" stroke="#67FFF2" stroke-width="0.6"/>
+              <line x1="22" y1="0" x2="32" y2="0" stroke="#67FFF2" stroke-width="0.6"/>
+              <!-- floodlights -->
+              <line x1="-44" y1="-22" x2="-44" y2="-32" stroke="#67FFF2" stroke-width="1.2"/>
+              <circle cx="-44" cy="-32" r="2" fill="#81EC86" class="flicker-h"/>
+              <line x1="44" y1="-22" x2="44" y2="-32" stroke="#67FFF2" stroke-width="1.2"/>
+              <circle cx="44" cy="-32" r="2" fill="#81EC86" class="flicker-h"/>
+              <!-- radio waves emanating -->
+              <g stroke="#67FFF2" fill="none" opacity="0.6" class="flicker-m">
+                <path d="M -50 -36 Q -54 -32 -50 -28" stroke-width="1"/>
+                <path d="M -56 -38 Q -62 -32 -56 -26" stroke-width="1" opacity="0.5"/>
+              </g>
+              <g stroke="#67FFF2" fill="none" opacity="0.6" class="flicker-m">
+                <path d="M 50 -36 Q 54 -32 50 -28" stroke-width="1"/>
+                <path d="M 56 -38 Q 62 -32 56 -26" stroke-width="1" opacity="0.5"/>
+              </g>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <div class="role reveal">
+        <div class="role-year">2023 · FEB – MAR</div>
+        <div class="role-body">
+          <h3>Accreditation Officer</h3>
+          <div class="org">Resources Events Solutions · Formula 1 Saudi Arabian GP</div>
+          <p>Accreditation for all event personnel at the F1 SAGP — the closest I've been to my future office.</p>
+        </div>
+        <div class="role-vis">
+          <!-- F1 track outline -->
+          <svg viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg" aria-label="F1 racing circuit">
+            <g transform="translate(100, 55)">
+              <!-- track outline (abstract racetrack curves, asymmetric) -->
+              <path d="M -50 0 Q -50 -35 -20 -35 L 30 -35 Q 50 -35 50 -15 Q 50 0 35 5 L 5 15 Q -15 22 -30 30 Q -50 35 -50 18 L -50 0 Z" fill="none" stroke="#67FFF2" stroke-width="1.8" class="flicker-s"/>
+              <!-- start/finish marker -->
+              <line x1="-50" y1="-3" x2="-46" y2="-3" stroke="#81EC86" stroke-width="2" class="flicker-m"/>
+              <line x1="-50" y1="3" x2="-46" y2="3" stroke="#81EC86" stroke-width="2" class="flicker-m"/>
+              <!-- direction arrow on track -->
+              <path d="M 20 -35 L 26 -32 L 20 -29" fill="none" stroke="#81EC86" stroke-width="1.5"/>
+              <!-- car position dot -->
+              <circle cx="-30" cy="-35" r="3" fill="#81EC86" class="flicker-h"/>
+              <!-- sector lines -->
+              <line x1="0" y1="-38" x2="0" y2="-32" stroke="#43B0AF" stroke-width="0.8" opacity="0.6"/>
+              <line x1="50" y1="-8" x2="46" y2="-8" stroke="#43B0AF" stroke-width="0.8" opacity="0.6"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CONNECT ===== -->
+  <section class="connect" id="connect" data-node="SK-06 / CONNECT">
+    <div class="grid-bg"></div>
+    <div class="connect-inner">
+      <div class="connect-eye reveal">// CONNECT</div>
+      <h2 class="connect-h reveal">
+        Looking for an <em>AI engineer</em> who's also seen the <em class="g">pit wall</em>?
+      </h2>
+      <div class="connect-grid reveal">
+        <a href="mailto:samar.kintab@gmail.com" class="connect-card" data-hover>
+          <div class="ck-top">
+            <span class="ck-lbl">// Email</span>
+            <span class="ck-arrow">↗</span>
+          </div>
+          <div class="ck-val">samar.kintab@gmail.com</div>
+        </a>
+        <a href="https://www.linkedin.com/in/samar-k-aa00b8219/" target="_blank" rel="noopener" class="connect-card" data-hover>
+          <div class="ck-top">
+            <span class="ck-lbl">// LinkedIn</span>
+            <span class="ck-arrow">↗</span>
+          </div>
+          <div class="ck-val">linkedin.com/in/samar-k-aa00b8219</div>
+        </a>
+        <a href="https://github.com/Samarrk" target="_blank" rel="noopener" class="connect-card" data-hover>
+          <div class="ck-top">
+            <span class="ck-lbl">// GitHub</span>
+            <span class="ck-arrow">↗</span>
+          </div>
+          <div class="ck-val">github.com/Samarrk</div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div>SAMAR KINTAB <span class="cyan">//</span> 2026</div>
+      <div>BUILT IN JEDDAH <span class="green">//</span> SIGNAL: LIVE</div>
+    </div>
+  </footer>
+
+  <script>
+    // ===== Cursor =====
+    const dot = document.getElementById('cursorDot');
+    const ring = document.getElementById('cursorRing');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+    document.addEventListener('mousemove', (e) => {
+      mx = e.clientX; my = e.clientY;
+      dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+    });
+    (function tick() {
+      rx += (mx - rx) * 0.18;
+      ry += (my - ry) * 0.18;
+      ring.style.left = rx + 'px';
+      ring.style.top = ry + 'px';
+      requestAnimationFrame(tick);
+    })();
+    document.querySelectorAll('a, [data-hover], .kc').forEach(el => {
+      el.addEventListener('mouseenter', () => ring.classList.add('hover'));
+      el.addEventListener('mouseleave', () => ring.classList.remove('hover'));
+    });
+
+    // ===== Clock (Jeddah = UTC+3) =====
+    function clk() {
+      const now = new Date();
+      const ast = new Date(now.getTime() + (now.getTimezoneOffset() * 60000) + (3 * 3600000));
+      const hh = String(ast.getHours()).padStart(2, '0');
+      const mm = String(ast.getMinutes()).padStart(2, '0');
+      const ss = String(ast.getSeconds()).padStart(2, '0');
+      document.getElementById('tClock').textContent = `${hh}:${mm}:${ss}`;
+    }
+    clk(); setInterval(clk, 1000);
+
+    // ===== Node indicator on scroll =====
+    const nodes = document.querySelectorAll('[data-node]');
+    const nodeEl = document.getElementById('tNode');
+    function updateNode() {
+      const y = window.scrollY + window.innerHeight * 0.35;
+      let cur = nodes[0];
+      nodes.forEach(s => { if (s.offsetTop <= y) cur = s; });
+      const v = cur.dataset.node;
+      if (nodeEl.textContent !== v) nodeEl.textContent = v;
+    }
+    window.addEventListener('scroll', updateNode, { passive: true });
+    updateNode();
+
+    // ===== Reveal on scroll =====
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          if (e.target.classList.contains('hero-tag') || e.target.classList.contains('hero-pills')) {
+            e.target.classList.add('reveal-on');
+          }
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -50px 0px' });
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+    // ===== Typewriter =====
+    const tw = document.getElementById('typewriter');
+    const nm = document.getElementById('nameLine');
+    const tag = document.getElementById('heroTag');
+    const pills = document.getElementById('heroPills');
+    const line1 = "Hello, I'm";
+    const line2 = "Samar Kintab";
+    let i = 0;
+    function typeL1() {
+      if (i <= line1.length) {
+        tw.innerHTML = line1.slice(0, i) + '<span class="caret"></span>';
+        i++;
+        setTimeout(typeL1, 70);
+      } else {
+        tw.innerHTML = line1;
+        i = 0;
+        setTimeout(typeL2, 200);
+      }
+    }
+    function typeL2() {
+      if (i <= line2.length) {
+        nm.innerHTML = line2.slice(0, i) + '<span class="caret"></span>';
+        i++;
+        setTimeout(typeL2, 80);
+      } else {
+        nm.innerHTML = line2 + '<span class="caret"></span>';
+        setTimeout(() => {
+          tag.classList.add('reveal-on');
+          pills.classList.add('reveal-on');
+        }, 300);
+      }
+    }
+    setTimeout(typeL1, 400);
+
+    // ===== Keyboard hover -> update label =====
+    const skillLabel = document.getElementById('skillLabel');
+    const skillDesc = document.getElementById('skillDesc');
+    document.querySelectorAll('.kc').forEach(kc => {
+      kc.style.cursor = 'pointer';
+      kc.addEventListener('mouseenter', () => {
+        const sk = kc.dataset.skill;
+        const ds = kc.dataset.desc;
+        skillLabel.innerHTML = '<span class="name-pop">' + sk + '.</span><span class="desc">' + ds + '</span>';
+        // brighten the hovered key
+        const glow = kc.querySelector('.kc-glow');
+        if (glow) glow.style.opacity = '1';
+      });
+      kc.addEventListener('mouseleave', () => {
+        const glow = kc.querySelector('.kc-glow');
+        if (glow) glow.style.opacity = '';
+      });
+    });
+  </script>
+</body>
+</html>
